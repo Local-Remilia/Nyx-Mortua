@@ -1,222 +1,131 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nyx-Mortua | System Access</title>
+    <title>Nyx-Mortua | Winter Wasteland</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
-            --cyan: #00f3ff;
-            --magenta: #ff00ff;
-            --dark: #050510;
+            --bg-color: #030305;
+            --text-main: #e2e8f0;
+            --text-icy: #a5cddb;
         }
 
-        body {
+        body, html {
             margin: 0;
             padding: 0;
-            background-color: var(--dark);
-            color: #fff;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             font-family: 'Share Tech Mono', monospace;
-            overflow-x: hidden;
+            overflow: hidden; /* Prevent scrolling, keeps it feeling enclosed */
         }
 
-        /* Scanlines Overlay */
-        .scanlines {
+        /* Flash Photography / Vignette Effect */
+        .vignette {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(
-                to bottom,
-                rgba(255, 255, 255, 0),
-                rgba(255, 255, 255, 0) 50%,
-                rgba(0, 0, 0, 0.25) 50%,
-                rgba(0, 0, 0, 0.25)
-            );
-            background-size: 100% 4px;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 60%, rgba(0,0,0,1) 100%);
             pointer-events: none;
-            z-index: 100;
+            z-index: 5;
         }
 
-        /* CRT Flicker */
-        .crt::before {
-            content: " ";
-            display: block;
-            position: absolute;
+        /* Static Noise Overlay */
+        .noise {
+            position: fixed;
             top: 0;
             left: 0;
-            bottom: 0;
-            right: 0;
-            background: linear-gradient(
-                rgba(18, 16, 16, 0) 50%,
-                rgba(0, 0, 0, 0.1) 50%
-            );
-            z-index: 2;
-            background-size: 100% 2px, 3px 100%;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.04;
             pointer-events: none;
-        }
-        
-        .crt-flicker {
-            animation: flicker 0.15s infinite;
+            z-index: 6;
         }
 
-        @keyframes flicker {
-            0% { opacity: 0.95; }
-            50% { opacity: 0.85; }
-            100% { opacity: 0.95; }
-        }
-
-        /* Cyber Grid Background */
-        .cyber-grid {
+        /* Snow Canvas */
+        #snow-canvas {
             position: fixed;
-            width: 200vw;
-            height: 200vh;
-            top: -50vh;
-            left: -50vw;
-            background-image: 
-                linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 0, 255, 0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
-            transform: perspective(500px) rotateX(60deg);
-            animation: grid-move 10s linear infinite;
-            z-index: -1;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            /* Slight blur to make some flakes feel out of focus (depth of field) */
+            filter: blur(0.5px); 
         }
 
-        @keyframes grid-move {
-            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
-            100% { transform: perspective(500px) rotateX(60deg) translateY(40px); }
+        /* Main Content Container */
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+            text-align: center;
         }
 
-        /* Glitch Title */
-        .glitch-wrapper {
-            font-family: 'Orbitron', sans-serif;
+        /* Brutalist Title */
+        h1 {
+            font-family: 'Special Elite', cursive;
+            font-size: 3.5rem;
+            letter-spacing: 0.2em;
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3), 0 0 5px rgba(165, 205, 219, 0.5);
+            margin-bottom: 0.5rem;
             text-transform: uppercase;
         }
 
-        .glitch {
-            position: relative;
-            color: #fff;
-            font-size: 3rem;
-            font-weight: 900;
-            text-shadow: 0 0 10px var(--cyan);
-        }
-
         @media (min-width: 768px) {
-            .glitch { font-size: 5rem; }
+            h1 { font-size: 5rem; }
         }
 
-        .glitch::before, .glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
+        /* Terminal Text Area */
+        .log-container {
+            max-width: 600px;
             width: 100%;
-            height: 100%;
-            background: var(--dark);
-        }
-
-        .glitch::before {
-            left: 2px;
-            text-shadow: -2px 0 var(--magenta);
-            clip: rect(44px, 450px, 56px, 0);
-            animation: glitch-anim 5s infinite linear alternate-reverse;
-        }
-
-        .glitch::after {
-            left: -2px;
-            text-shadow: -2px 0 var(--cyan);
-            clip: rect(44px, 450px, 56px, 0);
-            animation: glitch-anim2 5s infinite linear alternate-reverse;
-        }
-
-        @keyframes glitch-anim {
-            0% { clip: rect(74px, 9999px, 86px, 0); }
-            5% { clip: rect(21px, 9999px, 12px, 0); }
-            10% { clip: rect(98px, 9999px, 32px, 0); }
-            15% { clip: rect(15px, 9999px, 78px, 0); }
-            20% { clip: rect(54px, 9999px, 92px, 0); }
-            25% { clip: rect(31px, 9999px, 5px, 0); }
-            30% { clip: rect(87px, 9999px, 63px, 0); }
-            35% { clip: rect(4px, 9999px, 45px, 0); }
-            40% { clip: rect(76px, 9999px, 19px, 0); }
-            45% { clip: rect(22px, 9999px, 88px, 0); }
-            50% { clip: rect(91px, 9999px, 34px, 0); }
-            55% { clip: rect(11px, 9999px, 76px, 0); }
-            60% { clip: rect(59px, 9999px, 93px, 0); }
-            65% { clip: rect(35px, 9999px, 7px, 0); }
-            70% { clip: rect(83px, 9999px, 51px, 0); }
-            75% { clip: rect(2px, 9999px, 43px, 0); }
-            80% { clip: rect(66px, 9999px, 15px, 0); }
-            85% { clip: rect(28px, 9999px, 85px, 0); }
-            90% { clip: rect(96px, 9999px, 37px, 0); }
-            95% { clip: rect(14px, 9999px, 72px, 0); }
-            100% { clip: rect(52px, 9999px, 96px, 0); }
-        }
-
-        @keyframes glitch-anim2 {
-            0% { clip: rect(29px, 9999px, 84px, 0); }
-            5% { clip: rect(81px, 9999px, 16px, 0); }
-            10% { clip: rect(18px, 9999px, 97px, 0); }
-            15% { clip: rect(72px, 9999px, 31px, 0); }
-            20% { clip: rect(4px, 9999px, 66px, 0); }
-            25% { clip: rect(95px, 9999px, 22px, 0); }
-            30% { clip: rect(38px, 9999px, 89px, 0); }
-            35% { clip: rect(61px, 9999px, 7px, 0); }
-            40% { clip: rect(13px, 9999px, 54px, 0); }
-            45% { clip: rect(86px, 9999px, 41px, 0); }
-            50% { clip: rect(25px, 9999px, 93px, 0); }
-            55% { clip: rect(77px, 9999px, 12px, 0); }
-            60% { clip: rect(49px, 9999px, 68px, 0); }
-            65% { clip: rect(8px, 9999px, 35px, 0); }
-            70% { clip: rect(92px, 9999px, 82px, 0); }
-            75% { clip: rect(33px, 9999px, 18px, 0); }
-            80% { clip: rect(64px, 9999px, 57px, 0); }
-            85% { clip: rect(16px, 9999px, 94px, 0); }
-            90% { clip: rect(88px, 9999px, 26px, 0); }
-            95% { clip: rect(42px, 9999px, 71px, 0); }
-            100% { clip: rect(5px, 9999px, 48px, 0); }
-        }
-
-        /* Tech Container */
-        .tech-container {
-            background: rgba(5, 5, 16, 0.7);
-            border: 1px solid rgba(0, 243, 255, 0.3);
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1), inset 0 0 20px rgba(0, 243, 255, 0.05);
-            backdrop-filter: blur(10px);
+            background: rgba(10, 12, 15, 0.6);
+            border-left: 3px solid var(--text-icy);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: left;
             position: relative;
         }
 
-        .tech-container::before {
-            content: '';
+        .log-container::before {
+            content: '[REC. LOG // ' attr(data-time) ']';
             position: absolute;
-            top: -1px;
-            left: -1px;
-            width: 20px;
-            height: 20px;
-            border-top: 2px solid var(--cyan);
-            border-left: 2px solid var(--cyan);
+            top: -12px;
+            left: 10px;
+            background: var(--bg-color);
+            padding: 0 5px;
+            font-size: 0.75rem;
+            color: var(--text-icy);
+            opacity: 0.7;
         }
 
-        .tech-container::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            right: -1px;
-            width: 20px;
-            height: 20px;
-            border-bottom: 2px solid var(--magenta);
-            border-right: 2px solid var(--magenta);
+        #typed-text {
+            color: #caced5;
+            font-size: 1rem;
+            line-height: 1.6;
+            min-height: 120px;
         }
 
-        /* Typing Effect cursor */
         .cursor {
             display: inline-block;
-            width: 10px;
-            height: 1.2em;
-            background-color: var(--cyan);
+            width: 8px;
+            height: 1em;
+            background-color: var(--text-icy);
             vertical-align: middle;
             animation: blink 1s step-end infinite;
         }
@@ -226,163 +135,189 @@
             50% { opacity: 0; }
         }
 
-        /* Cyberpunk Button */
-        .cyber-btn {
-            position: relative;
+        /* Survivalist Button */
+        .vault-btn {
+            margin-top: 3rem;
             display: inline-block;
             padding: 1rem 2rem;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700;
+            font-family: 'Special Elite', cursive;
+            font-size: 1.2rem;
+            color: #000;
+            background: var(--text-icy);
+            border: 2px solid var(--text-icy);
             text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--cyan);
-            background: transparent;
-            border: 2px solid var(--cyan);
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5), inset 0 0 10px rgba(0, 243, 255, 0.2);
-            transition: all 0.3s ease;
             text-decoration: none;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(165, 205, 219, 0.2);
+            position: relative;
             overflow: hidden;
-            z-index: 10;
         }
 
-        .cyber-btn::before {
+        .vault-btn:hover {
+            background: transparent;
+            color: var(--text-icy);
+            box-shadow: 0 0 25px rgba(165, 205, 219, 0.4), inset 0 0 10px rgba(165, 205, 219, 0.2);
+        }
+
+        .vault-btn::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.4), transparent);
-            transition: all 0.4s ease;
-            z-index: -1;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
         }
 
-        .cyber-btn:hover {
-            color: var(--dark);
-            background: var(--cyan);
-            border-color: var(--cyan);
-            box-shadow: 0 0 20px var(--cyan), 0 0 40px var(--cyan), inset 0 0 20px #fff;
-            text-shadow: 0 0 5px var(--dark);
-        }
-
-        .cyber-btn:hover::before {
+        .vault-btn:hover::before {
             left: 100%;
         }
 
-        .cyber-btn:active {
-            transform: scale(0.98);
-        }
-
-        /* Status Blinking Dot */
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            background-color: #ff0055;
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 10px #ff0055;
-            animation: pulse-dot 1.5s infinite;
-        }
-
-        @keyframes pulse-dot {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
+        /* Subtle environment details */
+        .temp-reading {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: var(--text-icy);
+            opacity: 0.5;
         }
 
     </style>
 </head>
-<body class="crt-flicker flex items-center justify-center min-h-screen p-4 sm:p-8">
+<body>
 
-    <!-- Background Elements -->
-    <div class="cyber-grid"></div>
-    <div class="scanlines"></div>
+    <!-- Environment Overlays -->
+    <canvas id="snow-canvas"></canvas>
+    <div class="vignette"></div>
+    <div class="noise"></div>
+
+    <div class="temp-reading">EXT. TEMP: -34°C<br>SIGNAL: WEAK</div>
 
     <!-- Main Content -->
-    <main class="relative z-10 w-full max-w-4xl flex flex-col items-center justify-center space-y-12">
+    <main class="content-wrapper">
         
-        <!-- Header / Title -->
-        <header class="text-center w-full">
-            <div class="flex items-center justify-center space-x-3 mb-4">
-                <span class="status-dot"></span>
-                <span class="text-[#ff0055] tracking-widest text-sm uppercase">Secure Connection Established</span>
-            </div>
-            <div class="glitch-wrapper">
-                <h1 class="glitch text-center" data-text="Nyx-Mortua">Nyx-Mortua</h1>
-                <h2 class="text-xl sm:text-2xl mt-2 text-[#ff00ff] tracking-[0.3em] uppercase drop-shadow-[0_0_8px_rgba(255,0,255,0.8)]">Repository</h2>
-            </div>
+        <header>
+            <h1>Nyx-Mortua</h1>
+            <p class="text-sm tracking-[0.4em] uppercase text-[#a5cddb] opacity-60">Site Zero // Abandoned</p>
         </header>
 
-        <!-- Information Terminal -->
-        <div class="tech-container w-full p-6 sm:p-10 rounded-sm">
-            <div class="flex border-b border-[#00f3ff]/30 pb-3 mb-6">
-                <div class="flex space-x-2">
-                    <div class="w-3 h-3 bg-[#00f3ff]/50 rounded-full"></div>
-                    <div class="w-3 h-3 bg-[#00f3ff]/30 rounded-full"></div>
-                    <div class="w-3 h-3 bg-[#ff00ff]/30 rounded-full"></div>
-                </div>
-                <div class="ml-auto text-xs text-[#00f3ff]/70 tracking-widest">
-                    SYS_ID: 0x98A4 // CLASSIFIED
-                </div>
-            </div>
-            
-            <p class="text-base sm:text-lg leading-relaxed text-gray-200 min-h-[120px]" id="terminal-text"></p>
-            
-            <div class="mt-8 flex flex-col sm:flex-row items-center justify-between border-t border-[#ff00ff]/30 pt-4">
-                <div class="text-xs text-[#ff00ff] mb-4 sm:mb-0 uppercase tracking-widest">
-                    Status: <span class="animate-pulse">Awaiting Authorization</span>
-                </div>
-                <div class="text-xs text-[#00f3ff]/60">
-                    HOST: local-remilia.github.io
-                </div>
+        <div class="log-container" data-time="03:14 AM">
+            <div id="typed-text-container">
+                <span id="typed-text"></span><span class="cursor"></span>
             </div>
         </div>
 
-        <!-- Call to Action -->
-        <div class="pt-4 pb-12 w-full text-center">
-            <a href="https://local-remilia.github.io/Nyx-Mortua/confidential2pointO.html" class="cyber-btn w-full sm:w-auto">
-                <span class="relative z-10">Accedi all'Archivio Confidenziale 2.0</span>
-            </a>
-        </div>
+        <a href="https://local-remilia.github.io/Nyx-Mortua/confidential2pointO.html" class="vault-btn">
+            Open Vault
+        </a>
 
     </main>
 
-    <!-- Script for Typewriter Effect -->
     <script>
+        // --- TYPEWRITER EFFECT ---
         document.addEventListener('DOMContentLoaded', () => {
-            const textElement = document.getElementById('terminal-text');
-            const textToType = "> ACCESSO AGLI ARCHIVI CLASSIFICATI DEL PROGETTO NYX-MORTUA...\n> ATTENZIONE: Qui risiedono moduli sperimentali, log di sistema frammentati e dati altamente riservati.\n> L'ingresso non autorizzato è strettamente monitorato dal mainframe centrale.\n> Autenticazione richiesta per procedere.";
+            const textElement = document.getElementById('typed-text');
+            const lines = [
+                "RECOVERING FRAGMENTED LOGS...",
+                "...",
+                "Severe blizzard conditions detected. Power grid offline.",
+                "This repository contains the last known survival logs, lost data, and recovered files from the winter wasteland.",
+                "Enter at your own risk. The cold claims everyone eventually."
+            ];
             
-            let i = 0;
-            let isTyping = true;
-            
-            // Creiamo un contenitore per il testo e uno per il cursore
-            textElement.innerHTML = '<span id="typed-content"></span><span class="cursor"></span>';
-            const contentSpan = document.getElementById('typed-content');
+            let lineIndex = 0;
+            let charIndex = 0;
 
             function typeWriter() {
-                if (i < textToType.length) {
-                    // Gestione degli a capo nel testo
-                    if (textToType.charAt(i) === '\n') {
-                        contentSpan.innerHTML += '<br><br>';
+                if (lineIndex < lines.length) {
+                    if (charIndex < lines[lineIndex].length) {
+                        textElement.innerHTML += lines[lineIndex].charAt(charIndex);
+                        charIndex++;
+                        
+                        let speed = Math.random() * 40 + 20; 
+                        setTimeout(typeWriter, speed);
                     } else {
-                        contentSpan.innerHTML += textToType.charAt(i);
+                        textElement.innerHTML += '<br><br>';
+                        lineIndex++;
+                        charIndex = 0;
+                        setTimeout(typeWriter, 500); // Pause between lines
                     }
-                    i++;
-                    
-                    // Velocità di battitura variabile per un effetto più realistico
-                    let speed = Math.random() * 30 + 20; 
-                    if (textToType.charAt(i-1) === '.' || textToType.charAt(i-1) === '\n') {
-                        speed = 400; // Pausa più lunga dopo i punti o a capo
-                    }
-                    
-                    setTimeout(typeWriter, speed);
                 }
             }
 
-            // Ritardo iniziale prima di iniziare a digitare
+            // Start typing after a short delay
             setTimeout(typeWriter, 1000);
+            
+            // Set dynamic timestamp
+            const logContainer = document.querySelector('.log-container');
+            const now = new Date();
+            logContainer.setAttribute('data-time', now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }));
         });
+
+        // --- SNOWFALL CANVAS SIMULATION ---
+        const canvas = document.getElementById('snow-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+        
+        function initSnow() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            particles = [];
+            
+            // Generate particles
+            const particleCount = Math.floor(width / 3); // Scale snow with screen width
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    r: Math.random() * 2 + 0.5, // radius (flake size)
+                    d: Math.random() * Math.PI, // density (used for sway)
+                    v: Math.random() * 3 + 1 // velocity
+                });
+            }
+        }
+
+        let angle = 0;
+        function updateAndDrawSnow() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; // Stark white snow
+            ctx.beginPath();
+            
+            angle += 0.01;
+            
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                ctx.moveTo(p.x, p.y);
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
+                
+                // Update position
+                // y increases (falling down), x moves left/right based on angle and density
+                p.y += p.v;
+                p.x += Math.sin(angle + p.d) + 0.5; // Slight wind to the right
+                
+                // If flake reaches bottom or sides, respawn it
+                if (p.y > height) {
+                    particles[i] = { x: Math.random() * width, y: -10, r: p.r, d: p.d, v: p.v };
+                }
+                if (p.x > width + 5) {
+                    particles[i] = { x: -5, y: Math.random() * height, r: p.r, d: p.d, v: p.v };
+                }
+            }
+            
+            ctx.fill();
+            requestAnimationFrame(updateAndDrawSnow);
+        }
+
+        // Handle resize
+        window.addEventListener('resize', initSnow);
+
+        // Start snow
+        initSnow();
+        updateAndDrawSnow();
     </script>
 </body>
 </html>
