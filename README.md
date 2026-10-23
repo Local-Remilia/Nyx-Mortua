@@ -1,2 +1,2 @@
 # Nyx-Mortua
-OFficial site for my "Nyx Mortua" project
+Official site for my "Nyx Mortua" project
