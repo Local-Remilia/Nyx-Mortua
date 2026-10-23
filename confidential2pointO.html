@@ -5,17 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Confidential Database</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-color: #05070a; /* Dark night sky */
+            --text-icy: #a5cddb;
+        }
+
         body {
-            background-color: #1a1a24;
+            background-color: var(--bg-color);
             color: #e5e5e5;
             overflow: hidden;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Share Tech Mono', 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Static Noise Overlay */
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* Snow Canvas */
+        #snow-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            filter: blur(0.5px); 
         }
 
         /* Search Screen */
         #search-screen {
+            position: relative;
+            z-index: 10;
             transition: opacity 0.5s ease-in-out;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .terminal-box {
+            background: rgba(10, 12, 15, 0.75);
+            border: 1px solid rgba(165, 205, 219, 0.2);
+            backdrop-filter: blur(4px);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(165, 205, 219, 0.05);
+            position: relative;
+        }
+
+        .terminal-box::before {
+            content: '[SYSTEM QUERY]';
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: var(--bg-color);
+            padding: 0 5px;
+            font-size: 0.75rem;
+            color: var(--text-icy);
+            opacity: 0.7;
         }
 
         /* 3D Scene Setup */
@@ -30,6 +92,7 @@
             top: 0; left: 0;
             pointer-events: none;
             opacity: 0;
+            z-index: 20;
         }
 
         .scene.active {
@@ -60,7 +123,7 @@
             height: 100%;
             background-color: #e5c387;
             border: 2px solid #c9a565;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.1), 10px 10px 30px rgba(0,0,0,0.5);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.1), 10px 10px 30px rgba(0,0,0,0.7);
             transform-style: preserve-3d;
             border-radius: 4px 12px 12px 4px;
         }
@@ -131,6 +194,7 @@
             opacity: 0.8;
             letter-spacing: 5px;
             text-transform: uppercase;
+            font-family: 'Courier New', Courier, monospace;
         }
 
         /* Info Fields */
@@ -144,6 +208,7 @@
             margin-bottom: 5px;
             text-transform: uppercase;
             font-size: 0.8rem;
+            font-family: 'Courier New', Courier, monospace;
         }
         .info-value {
             color: #111;
@@ -154,6 +219,7 @@
             outline: none;
             transition: background 0.2s;
             white-space: pre-wrap; 
+            font-family: 'Courier New', Courier, monospace;
         }
 
         /* Right Page Content */
@@ -237,7 +303,7 @@
 
         .typing-error {
             animation: shake 0.4s;
-            color: #ef4444;
+            border-color: #ef4444 !important;
         }
 
         @keyframes shake {
@@ -247,22 +313,33 @@
             75% { transform: translateX(-5px); }
             100% { transform: translateX(0); }
         }
-
     </style>
 </head>
 <body>
 
+    <!-- Environment Overlays -->
+    <canvas id="snow-canvas"></canvas>
+    <div class="noise"></div>
+
     <!-- Search Screen -->
-    <div id="search-screen" class="min-h-screen flex flex-col items-center justify-center">
-        <div class="max-w-md w-full p-8 bg-gray-900 rounded-lg shadow-2xl border border-gray-700">
-            <h1 class="text-2xl font-bold text-center mb-6 text-gray-300">ARCHIVE QUERY SYSTEM</h1>
-            <div class="mb-4">
-                <input type="text" id="searchInput" placeholder="Enter First and Last Name" 
-                       class="w-full bg-gray-800 border border-gray-600 text-white px-4 py-3 rounded focus:outline-none focus:border-blue-500 font-mono text-center">
-                <p id="error-msg" class="text-red-500 text-xs mt-2 text-center hidden">Record not found. Access denied.</p>
+    <div id="search-screen">
+        <div class="max-w-md w-full p-8 terminal-box rounded-lg">
+            
+            <p class="text-[var(--text-icy)] text-sm mb-6 text-center opacity-80 border-b border-[var(--text-icy)] pb-4 border-opacity-30">
+                &gt; fragmented logs recovered<br>
+                &gt; warning: files might be corrupted
+            </p>
+            
+            <h1 class="text-2xl font-bold text-center mb-6 text-white tracking-widest uppercase">ARCHIVE QUERY</h1>
+            
+            <div class="mb-6">
+                <input type="text" id="searchInput" placeholder="ENTER SUBJECT NAME" 
+                       class="w-full bg-black/50 border border-gray-600 text-white px-4 py-3 rounded focus:outline-none focus:border-[var(--text-icy)] font-mono text-center uppercase transition-colors placeholder-gray-500">
+                <p id="error-msg" class="text-red-500 text-xs mt-2 text-center hidden tracking-wider">RECORD NOT FOUND. ACCESS DENIED.</p>
             </div>
-            <button onclick="searchRecord()" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded transition duration-200">
-                SEARCH
+            
+            <button onclick="searchRecord()" class="w-full bg-transparent border border-[var(--text-icy)] text-[var(--text-icy)] hover:bg-[var(--text-icy)] hover:text-black font-bold py-3 px-4 rounded transition duration-300 tracking-widest uppercase shadow-[0_0_10px_rgba(165,205,219,0.1)]">
+                SEARCH DATABASE
             </button>
         </div>
     </div>
@@ -317,7 +394,7 @@
 
                 <!-- Interior (Left Page info) -->
                 <div class="front-interior">
-                    <h2 class="text-3xl font-bold mb-6 text-gray-800 border-b-2 border-gray-800 pb-2">SUBJECT DOSSIER</h2>
+                    <h2 class="text-3xl font-bold mb-6 text-gray-800 border-b-2 border-gray-800 pb-2" style="font-family: 'Courier New', Courier, monospace;">SUBJECT DOSSIER</h2>
                     
                     <div style="margin-top: 160px;">
                         <div class="info-group">
@@ -356,7 +433,64 @@
     </div>
 
     <script>
-        // Database
+        // --- SNOWFALL CANVAS SIMULATION ---
+        const canvas = document.getElementById('snow-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let width, height;
+        let particles = [];
+        
+        function initSnow() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            particles = [];
+            
+            const particleCount = Math.floor(width / 3); 
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    r: Math.random() * 2 + 0.5, 
+                    d: Math.random() * Math.PI, 
+                    v: Math.random() * 3 + 1 
+                });
+            }
+        }
+
+        let angle = 0;
+        function updateAndDrawSnow() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'; 
+            ctx.beginPath();
+            
+            angle += 0.01;
+            
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                ctx.moveTo(p.x, p.y);
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
+                
+                p.y += p.v;
+                p.x += Math.sin(angle + p.d) + 0.5; 
+                
+                if (p.y > height) {
+                    particles[i] = { x: Math.random() * width, y: -10, r: p.r, d: p.d, v: p.v };
+                }
+                if (p.x > width + 5) {
+                    particles[i] = { x: -5, y: Math.random() * height, r: p.r, d: p.d, v: p.v };
+                }
+            }
+            
+            ctx.fill();
+            requestAnimationFrame(updateAndDrawSnow);
+        }
+
+        window.addEventListener('resize', initSnow);
+        initSnow();
+        updateAndDrawSnow();
+
+        // --- DATABASE & FOLDER LOGIC ---
         const database = [
             {
                 alias: "The Fixer",
@@ -369,7 +503,7 @@
                 assoc: "Hana assoc.",
                 status: "MISSING",
                 notes: "Subject has been off the grid for 3 weeks. Last seen near the docks.\nSuspected of hoarding classified Hana tech.",
-                photo: "https://thispersondoesnotexist.com/random-person.jpeg"
+                photo: "https://thispersondoesnotexist.com/"
             },
             {
                 alias: "Cipher",
